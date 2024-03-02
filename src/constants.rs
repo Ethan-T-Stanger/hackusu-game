@@ -2,13 +2,15 @@ use bevy::render::{render_resource::Extent3d, view::RenderLayers};
 
 pub const HIGH_RES_LAYER: RenderLayers = RenderLayers::layer(1);
 pub const RESOLUTION: Extent3d = Extent3d {
-    width: 512,
-    height: 288,
+    width: 320,
+    height: 180,
     depth_or_array_layers: 1,
 };
 
-pub const CAMERA_FOLLOW_SPEED: f32 = 0.8;
-pub const CAMERA_LOOKAHEAD_DISTANCE: f32 = 80.0;
+pub const DOT_DISTANCE: u32 = 10;
+
+pub const CAMERA_FOLLOW_SPEED: f32 = 0.95;
+pub const CAMERA_LOOKAHEAD_DISTANCE: f32 = 170.0;
 
 pub const BOOST_ACCELERATION_SPEED: f32 = 11.0;
 pub const PASSIVE_ACCELERATION_SPEED: f32 = 5.0;

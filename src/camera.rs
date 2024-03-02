@@ -7,7 +7,8 @@ use bevy::transform::{self, commands};
 use bevy::window::WindowResized;
 
 use crate::constants::{
-    CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, HIGH_RES_LAYER, RESOLUTION,
+    CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, DOT_DISTANCE, HIGH_RES_LAYER, MAX_SPEED,
+    RESOLUTION,
 };
 use crate::game::{PlayerGun, Velocity};
 
@@ -86,13 +87,7 @@ pub fn follow_player(
     let (player_transform, velocity) = player_query.single();
     let mut camera_transform = camera_query.single_mut();
 
-    let normalized_velocity = if velocity.0.length() > 0.5 {
-        velocity.0.normalize()
-    } else {
-        Vec2::ZERO
-    };
-
-    let lookahead_position = normalized_velocity * CAMERA_LOOKAHEAD_DISTANCE;
+    let lookahead_position = (velocity.0 / MAX_SPEED) * CAMERA_LOOKAHEAD_DISTANCE;
 
     camera_transform.translation = camera_transform.translation.lerp(
         Vec3::new(
@@ -108,18 +103,18 @@ pub fn follow_player(
 pub struct BackgroundDot;
 
 pub fn add_background_dots(mut commands: Commands) {
-    for i in 0..(RESOLUTION.width / 8) {
-        for j in 0..(RESOLUTION.height / 8) {
+    for i in 0..(RESOLUTION.width / DOT_DISTANCE) {
+        for j in 0..(RESOLUTION.height / DOT_DISTANCE) {
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::rgb(0.3, 0.3, 0.3),
+                        color: Color::rgb(0.4, 0.4, 0.45),
                         custom_size: Option::Some(Vec2::new(1.0, 1.0)),
                         ..default()
                     },
                     transform: Transform::from_xyz(
-                        i as f32 * 8.0 - RESOLUTION.width as f32 / 2.0 + 2.0,
-                        j as f32 * 8.0 - RESOLUTION.height as f32 / 2.0 + 1.0,
+                        i as f32 * DOT_DISTANCE as f32 - RESOLUTION.width as f32 / 2.0 + 2.0,
+                        j as f32 * DOT_DISTANCE as f32 - RESOLUTION.height as f32 / 2.0 + 1.0,
                         -1.0,
                     ),
                     ..default()
