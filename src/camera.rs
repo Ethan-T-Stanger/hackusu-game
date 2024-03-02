@@ -2,12 +2,14 @@ use crate::constants::{
     CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, DOT_DISTANCE, HIGH_RES_LAYER, MAX_SPEED,
     RESOLUTION,
 };
+use crate::jerry_cans::UIJerryCan;
 use crate::player::{PlayerGun, Velocity};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
+use bevy::transform;
 use bevy::window::WindowResized;
 
 #[derive(Component)]

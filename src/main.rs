@@ -9,7 +9,7 @@ use {
     bevy::window::WindowMode,
     camera::{add_background_dots, fit_canvas, follow_player, move_background_dots, setup_camera},
     enemies::{collide_with_enemies, move_enemies, setup_enemy_spawn_timer, spawn_enemy},
-    jerry_cans::{pickup_jerry_cans, rotate_jerry_cans},
+    jerry_cans::{display_ui_jerry_cans, pickup_jerry_cans, rotate_jerry_cans},
     player::{control_player, delete_bullets, move_objects_with_velocity, setup_player},
 };
 
@@ -45,7 +45,11 @@ fn main() {
                 spawn_enemy,
                 (
                     (
-                        (control_player, follow_player, move_enemies),
+                        (
+                            control_player,
+                            (follow_player, display_ui_jerry_cans).chain(),
+                            move_enemies,
+                        ),
                         move_objects_with_velocity,
                     )
                         .chain(),
