@@ -4,10 +4,12 @@ use {
         camera::InGameCamera,
         constants::{
             CAR_EXPLOSION_SHAKE_AMOUNT, ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED,
+            RESOLUTION,
         },
         jerry_cans::spawn_jerry_can,
         player::{spawn_bullets, Bullet, PlayerGun, Velocity},
     },
+    rand::{thread_rng, Rng},
     std::{f32::consts::TAU, time::Duration},
 };
 
@@ -26,7 +28,7 @@ pub struct EnemySpawnTimer(Timer);
 
 pub fn setup_enemy_spawn_timer(commands: &mut Commands) {
     commands.spawn(EnemySpawnTimer(Timer::new(
-        Duration::from_secs(5),
+        Duration::from_secs(3),
         TimerMode::Once,
     )));
 }
@@ -35,8 +37,14 @@ pub fn spawn_enemy(
     time: Res<Time>,
     mut commands: Commands,
     mut query: Query<&mut EnemySpawnTimer>,
+    player_query: Query<&Transform, With<PlayerGun>>,
     asset_server: Res<AssetServer>,
 ) {
+    let player_transform = match player_query.get_single() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
     let mut timer = match query.get_single_mut() {
         Ok(value) => value,
         Err(_) => return,
@@ -44,18 +52,28 @@ pub fn spawn_enemy(
 
     timer.0.tick(time.delta());
 
+    let new_duration = timer.0.duration().as_secs_f32() * 0.9;
+
     if timer.0.just_finished() {
-        let new_duration =
-            Duration::from_millis((timer.0.duration().as_millis() as f32 * 0.99).floor() as u64);
+        let new_duration = Duration::from_secs_f32(if new_duration < 0.5 {
+            0.5
+        } else {
+            new_duration
+        });
         timer.0.set_duration(new_duration);
         timer.0.reset();
 
         let enemy_texture = asset_server.load("graphics/enemy.png");
+        let vec2 = Vec2::from_angle(thread_rng().gen_range(-TAU..TAU)) * RESOLUTION.width as f32;
 
         commands.spawn(EnemyBundle {
             sprite_bundle: SpriteBundle {
                 texture: enemy_texture,
-                transform: Transform::from_xyz(10.0, 30.0, 1.0),
+                transform: Transform::from_xyz(
+                    player_transform.translation.x + vec2.x,
+                    player_transform.translation.y + vec2.y,
+                    1.0,
+                ),
                 ..default()
             },
             velocity: Velocity(Vec2::ZERO),
