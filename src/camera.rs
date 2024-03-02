@@ -4,7 +4,7 @@ use crate::constants::{
     CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, DOT_DISTANCE, HIGH_RES_LAYER, MAX_SPEED,
     RESOLUTION, SCREEN_SHAKE_FADE, SCREEN_SHAKE_MIN,
 };
-use crate::player::{PlayerGun, Velocity};
+use crate::player::{PlayerStats, Velocity};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
@@ -86,7 +86,7 @@ pub fn fit_canvas(
 
 pub fn follow_player(
     time: Res<Time>,
-    player_query: Query<(&Transform, &Velocity), (With<PlayerGun>, Without<InGameCamera>)>,
+    player_query: Query<(&Transform, &Velocity), (With<PlayerStats>, Without<InGameCamera>)>,
     mut camera_query: Query<(&mut Transform, &mut InGameCamera)>,
 ) {
     let (mut camera_transform, mut in_game_camera) = camera_query.single_mut();

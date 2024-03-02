@@ -4,7 +4,8 @@ use {
     crate::{
         camera::InGameCamera,
         constants::{JERRY_CAN_COLLECT_SPEED, JERRY_CAN_FUEL_COUNT, RESOLUTION},
-        player::PlayerGun,
+        player::PlayerStats,
+        target::Star,
     },
     rand::{thread_rng, Rng},
     std::time::Duration,
@@ -52,10 +53,11 @@ pub fn spawn_jerry_can(
     });
 }
 
-pub fn rotate_jerry_cans(
+pub fn rotate_jerry_cans_and_stars(
     time: Res<Time>,
-    mut jerry_cans: Query<(&mut TextureAtlas, &mut JerryCan), Without<UIJerryCan>>,
-    mut ui_jerry_cans: Query<(&mut TextureAtlas, &mut UIJerryCan)>,
+    mut jerry_cans: Query<(&mut TextureAtlas, &mut JerryCan), (Without<UIJerryCan>, Without<Star>)>,
+    mut ui_jerry_cans: Query<(&mut TextureAtlas, &mut UIJerryCan), Without<Star>>,
+    mut stars: Query<(&mut TextureAtlas, &mut Star)>,
 ) {
     for (mut atlas, mut jerry_can) in jerry_cans.iter_mut() {
         jerry_can.sprite_update_timer.tick(time.delta());
@@ -76,12 +78,22 @@ pub fn rotate_jerry_cans(
 
         atlas.index = if atlas.index == 8 { 0 } else { atlas.index + 1 };
     }
+
+    for (mut atlas, mut star) in stars.iter_mut() {
+        star.0.tick(time.delta());
+
+        if !star.0.just_finished() {
+            continue;
+        }
+
+        atlas.index = if atlas.index == 7 { 0 } else { atlas.index + 1 };
+    }
 }
 
 pub fn pickup_jerry_cans(
     time: Res<Time>,
     mut commands: Commands,
-    mut player_query: Query<(&Transform, &mut PlayerGun), Without<JerryCan>>,
+    mut player_query: Query<(&Transform, &mut PlayerStats), Without<JerryCan>>,
     mut jerry_cans: Query<(Entity, &mut Transform, &mut JerryCan)>,
 ) {
     let (player_transform, mut player_gun) = match player_query.get_single_mut() {
@@ -114,7 +126,7 @@ pub struct UIJerryCan(Timer);
 
 pub fn display_ui_jerry_cans(
     mut commands: Commands,
-    player_query: Query<&PlayerGun>,
+    player_query: Query<&PlayerStats>,
     mut ui_jerry_cans: Query<(Entity, &mut Transform), (With<UIJerryCan>, Without<InGameCamera>)>,
     camera_query: Query<&Transform, With<InGameCamera>>,
     asset_server: Res<AssetServer>,
@@ -136,10 +148,7 @@ pub fn display_ui_jerry_cans(
         }
 
         jerry_can.translation = Vec3 {
-            x: (RESOLUTION.width as f32 / -2.0)
-                + 10.0
-                + (count as f32 * 9.0)
-                + camera.translation.x,
+            x: (RESOLUTION.width as f32 / -2.0) + 8.0 + (count as f32 * 9.0) + camera.translation.x,
             y: (RESOLUTION.height as f32 / -2.0) + 10.0 + camera.translation.y,
             z: jerry_can.translation.z,
         };
@@ -164,7 +173,7 @@ pub fn display_ui_jerry_cans(
                         ..default()
                     },
                     transform: Transform::from_xyz(
-                        (RESOLUTION.width as f32 / -2.0) + (i as f32 * 9.0) + 10.0,
+                        (RESOLUTION.width as f32 / -2.0) + (i as f32 * 9.0) + 8.0,
                         (RESOLUTION.height as f32 / -2.0) + 10.0,
                         20.0,
                     ),

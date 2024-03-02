@@ -17,11 +17,12 @@ use {
 pub struct Player {
     sprite_bundle: SpriteBundle,
     velocity: Velocity,
-    player_gun: PlayerGun,
+    player_gun: PlayerStats,
 }
 
 #[derive(Component)]
-pub struct PlayerGun {
+pub struct PlayerStats {
+    pub score: u32,
     shoot_timer: Timer,
     pub ammunition: u32,
 }
@@ -37,7 +38,8 @@ pub fn setup_player(commands: &mut Commands, asset_server: &Res<AssetServer>) {
             ..default()
         },
         velocity: Velocity(Vec2::ZERO),
-        player_gun: PlayerGun {
+        player_gun: PlayerStats {
+            score: 0,
             shoot_timer: Timer::new(Duration::from_millis(5), TimerMode::Once),
             ammunition: 100,
         },
@@ -48,34 +50,37 @@ pub fn control_player(
     time: Res<Time>,
     mut commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut PlayerGun, &mut Transform, &mut Velocity)>,
+    mut query: Query<(&mut PlayerStats, &mut Transform, &mut Velocity)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let (mut player_gun, mut transform, mut velocity) = match query.get_single_mut() {
+    let (mut player_stats, mut transform, mut velocity) = match query.get_single_mut() {
         Ok(value) => value,
         Err(_) => return,
     };
 
-    if input.pressed(KeyCode::KeyA) {
+    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
         transform.rotate_z(ROTATION_SPEED * time.delta_seconds());
     }
-    if input.pressed(KeyCode::KeyD) {
+    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
         transform.rotate_z(-ROTATION_SPEED * time.delta_seconds());
     }
 
     let axis_angle = transform.rotation.to_axis_angle();
     let current_rotation = axis_angle.0.z * axis_angle.1;
 
-    player_gun.shoot_timer.tick(time.delta());
+    player_stats.shoot_timer.tick(time.delta());
 
     if input.pressed(KeyCode::KeyK)
-        && player_gun.shoot_timer.finished()
-        && player_gun.ammunition != 0
+        || input.pressed(KeyCode::Space)
+        || input.pressed(KeyCode::KeyX)
+        || input.pressed(KeyCode::ShiftRight)
+            && player_stats.shoot_timer.finished()
+            && player_stats.ammunition != 0
     {
         velocity.0 += Vec2::from_angle(current_rotation) * BOOST_ACCELERATION_SPEED;
-        player_gun.ammunition -= 1;
-        player_gun.shoot_timer.reset();
+        player_stats.ammunition -= 1;
+        player_stats.shoot_timer.reset();
         spawn_bullets(
             10,
             transform.clone(),
@@ -172,7 +177,7 @@ pub fn delete_bullets(
 
 pub fn kill_player(
     mut commands: Commands,
-    player_query: Query<(Entity, &Transform), (With<PlayerGun>, Without<Enemy>)>,
+    player_query: Query<(Entity, &Transform), (With<PlayerStats>, Without<Enemy>)>,
     enemies: Query<&Transform, With<Enemy>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,

@@ -23,11 +23,11 @@ pub const ROTATION_SPEED: f32 = 7.0;
 pub const DRAG: f32 = 0.998;
 
 pub const ENEMY_ACCELLERATION: f32 = 8.0;
-pub const ENEMY_MAX_SPEED: f32 = 170.0;
+pub const ENEMY_MAX_SPEED: f32 = 155.0;
 pub const ENEMY_ROTATION_SPEED: f32 = 4.0;
 
 pub const BULLET_SPEED: f32 = 70.0;
 pub const BULLET_VELOCITY_OFFSET: f32 = 30.0;
 
-pub const JERRY_CAN_FUEL_COUNT: u32 = 5;
+pub const JERRY_CAN_FUEL_COUNT: u32 = 7;
 pub const JERRY_CAN_COLLECT_SPEED: f32 = 0.45;

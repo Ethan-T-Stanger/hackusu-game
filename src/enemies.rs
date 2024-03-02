@@ -7,7 +7,7 @@ use {
             RESOLUTION,
         },
         jerry_cans::spawn_jerry_can,
-        player::{spawn_bullets, Bullet, PlayerGun, Velocity},
+        player::{spawn_bullets, Bullet, PlayerStats, Velocity},
     },
     rand::{thread_rng, Rng},
     std::{f32::consts::TAU, time::Duration},
@@ -37,7 +37,7 @@ pub fn spawn_enemy(
     time: Res<Time>,
     mut commands: Commands,
     mut query: Query<&mut EnemySpawnTimer>,
-    player_query: Query<&Transform, With<PlayerGun>>,
+    player_query: Query<&Transform, With<PlayerStats>>,
     asset_server: Res<AssetServer>,
 ) {
     let player_transform = match player_query.get_single() {
@@ -56,7 +56,7 @@ pub fn spawn_enemy(
 
     if timer.0.just_finished() {
         let new_duration = Duration::from_secs_f32(if new_duration < 0.5 {
-            0.5
+            1.0
         } else {
             new_duration
         });
@@ -84,7 +84,7 @@ pub fn spawn_enemy(
 
 pub fn move_enemies(
     time: Res<Time>,
-    player_query: Query<&Transform, (With<PlayerGun>, Without<Enemy>)>,
+    player_query: Query<&Transform, (With<PlayerStats>, Without<Enemy>)>,
     mut query: Query<(&mut Transform, &mut Velocity), With<Enemy>>,
 ) {
     let player_transform = match player_query.get_single() {
@@ -171,7 +171,7 @@ fn fix_angle(angle: f32, bounding_angle: Option<f32>) -> f32 {
     return temp_angle;
 }
 
-fn get_angle(rotation: Quat) -> f32 {
+pub fn get_angle(rotation: Quat) -> f32 {
     let axis_angle = rotation.to_axis_angle();
     return axis_angle.1 * axis_angle.0.z;
 }

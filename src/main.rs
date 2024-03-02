@@ -3,6 +3,7 @@ mod constants;
 mod enemies;
 mod jerry_cans;
 mod player;
+mod target;
 
 use bevy::prelude::*;
 use {
@@ -13,12 +14,13 @@ use {
         EnemySpawnTimer,
     },
     jerry_cans::{
-        display_ui_jerry_cans, pickup_jerry_cans, rotate_jerry_cans, JerryCan, UIJerryCan,
+        display_ui_jerry_cans, pickup_jerry_cans, rotate_jerry_cans_and_stars, JerryCan, UIJerryCan,
     },
     player::{
         control_player, delete_bullets, kill_player, move_objects_with_velocity, setup_player,
-        Bullet, PlayerGun,
+        Bullet, PlayerStats,
     },
+    target::{display_arrow, display_stars, setup_target, touch_target, Star, Target},
 };
 
 fn main() {
@@ -42,13 +44,14 @@ fn main() {
                 (
                     fit_canvas,
                     move_background_dots,
-                    rotate_jerry_cans,
+                    rotate_jerry_cans_and_stars,
                     spawn_enemy,
+                    display_arrow,
                     (
                         (
                             (
                                 control_player,
-                                (follow_player, display_ui_jerry_cans).chain(),
+                                (follow_player, display_ui_jerry_cans, display_stars).chain(),
                                 move_enemies,
                             ),
                             move_objects_with_velocity,
@@ -57,6 +60,7 @@ fn main() {
                         (
                             delete_bullets,
                             collide_with_enemies,
+                            touch_target,
                             pickup_jerry_cans,
                             kill_player,
                         ),
@@ -73,20 +77,29 @@ fn main() {
 fn reset_game(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     input: Res<ButtonInput<KeyCode>>,
-    player_query: Query<Entity, With<PlayerGun>>,
+    player_query: Query<Entity, With<PlayerStats>>,
+    target_query: Query<Entity, With<Target>>,
     enemies: Query<Entity, With<Enemy>>,
     enemy_spawn_timer_query: Query<Entity, With<EnemySpawnTimer>>,
     bullets: Query<Entity, With<Bullet>>,
     jerry_cans: Query<Entity, With<JerryCan>>,
     ui_jerry_cans: Query<Entity, With<UIJerryCan>>,
+    stars: Query<Entity, With<Star>>,
 ) {
-    if !input.pressed(KeyCode::KeyR) {
+    if !input.just_pressed(KeyCode::KeyR) {
         return;
     }
 
     match player_query.get_single() {
         Ok(player) => commands.entity(player).despawn(),
+        Err(_) => (),
+    };
+
+    match target_query.get_single() {
+        Ok(target) => commands.entity(target).despawn(),
         Err(_) => (),
     };
 
@@ -111,6 +124,11 @@ fn reset_game(
         commands.entity(ui_jerry_can).despawn();
     }
 
+    for star in stars.iter() {
+        commands.entity(star).despawn();
+    }
+
     setup_player(&mut commands, &asset_server);
-    setup_enemy_spawn_timer(&mut commands)
+    setup_enemy_spawn_timer(&mut commands);
+    setup_target(&mut commands, &mut meshes, &mut materials);
 }
