@@ -72,7 +72,7 @@ pub fn control_player(
         spawn_bullets(
             10,
             transform.clone(),
-            current_rotation,
+            Some(current_rotation),
             commands,
             meshes,
             materials,
@@ -95,18 +95,21 @@ pub struct Bullet {
     timer: Timer,
 }
 
-fn spawn_bullets(
+pub fn spawn_bullets(
     count: u32,
-    player_transform: Transform,
-    player_rotation: f32,
+    spawn_transform: Transform,
+    spawn_rotation: Option<f32>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let velocity = (Vec2::from_angle(player_rotation) * BULLET_SPEED * -1.0)
-        + Vec2::from_angle(thread_rng().gen_range(-TAU..TAU)) * BULLET_VELOCITY_OFFSET;
-
     for _i in 0..count {
+        let velocity =
+            (Vec2::from_angle(spawn_rotation.unwrap_or(thread_rng().gen_range(-TAU..TAU)))
+                * BULLET_SPEED
+                * -1.0)
+                + Vec2::from_angle(thread_rng().gen_range(-TAU..TAU)) * BULLET_VELOCITY_OFFSET;
+
         let color_int = thread_rng().gen_range(0..6);
 
         let color = if color_int <= 1 {
@@ -128,7 +131,7 @@ fn spawn_bullets(
                 transform: Transform {
                     translation: Vec3 {
                         z: 0.0,
-                        ..player_transform.translation
+                        ..spawn_transform.translation
                     },
                     rotation: Quat::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), velocity.to_angle()),
                     ..default()

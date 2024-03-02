@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use {
     crate::{
         constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED},
-        player::{Bullet, PlayerGun, Velocity},
+        player::{spawn_bullets, Bullet, PlayerGun, Velocity},
     },
     std::{f32::consts::TAU, time::Duration},
 };
@@ -92,6 +92,8 @@ pub fn collide_with_enemies(
     mut commands: Commands,
     enemies: Query<(Entity, &Transform), (With<Enemy>, Without<Bullet>)>,
     bullets: Query<&Transform, With<Bullet>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (enemy_entity, enemy_transform) in enemies.iter() {
         for bullet_transform in bullets.iter() {
@@ -101,7 +103,15 @@ pub fn collide_with_enemies(
                 < 4.0 + bullet_transform.scale.length()
             {
                 commands.entity(enemy_entity).despawn();
-                break;
+                spawn_bullets(
+                    165,
+                    enemy_transform.clone(),
+                    None,
+                    commands,
+                    meshes,
+                    materials,
+                );
+                return;
             }
         }
     }
