@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use {
     crate::{
         constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED},
-        player::{PlayerGun, Velocity},
+        player::{Bullet, PlayerGun, Velocity},
     },
     std::{f32::consts::TAU, time::Duration},
 };
@@ -84,6 +84,25 @@ pub fn move_enemies(
 
         if velocity.0.length() > ENEMY_MAX_SPEED {
             velocity.0 = velocity.0.normalize() * ENEMY_MAX_SPEED;
+        }
+    }
+}
+
+pub fn collide_with_enemies(
+    mut commands: Commands,
+    enemies: Query<(Entity, &Transform), (With<Enemy>, Without<Bullet>)>,
+    bullets: Query<&Transform, With<Bullet>>,
+) {
+    for (enemy_entity, enemy_transform) in enemies.iter() {
+        for bullet_transform in bullets.iter() {
+            if enemy_transform
+                .translation
+                .distance(bullet_transform.translation)
+                < 4.0 + bullet_transform.scale.length()
+            {
+                commands.entity(enemy_entity).despawn();
+                break;
+            }
         }
     }
 }

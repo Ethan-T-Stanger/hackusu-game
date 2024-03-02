@@ -19,8 +19,8 @@ pub const ROTATION_SPEED: f32 = 7.0;
 pub const DRAG: f32 = 0.998;
 
 pub const ENEMY_ACCELLERATION: f32 = 8.0;
-pub const ENEMY_MAX_SPEED: f32 = 160.0;
-pub const ENEMY_ROTATION_SPEED: f32 = 3.0;
+pub const ENEMY_MAX_SPEED: f32 = 150.0;
+pub const ENEMY_ROTATION_SPEED: f32 = 4.0;
 
 pub const BULLET_SPEED: f32 = 70.0;
 pub const BULLET_VELOCITY_OFFSET: f32 = 30.0;
