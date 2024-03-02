@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use {
     crate::{
         constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED},
+        jerry_cans::spawn_jerry_can,
         player::{spawn_bullets, Bullet, PlayerGun, Velocity},
     },
     std::{f32::consts::TAU, time::Duration},
@@ -92,8 +93,10 @@ pub fn collide_with_enemies(
     mut commands: Commands,
     enemies: Query<(Entity, &Transform), (With<Enemy>, Without<Bullet>)>,
     bullets: Query<&Transform, With<Bullet>>,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for (enemy_entity, enemy_transform) in enemies.iter() {
         for bullet_transform in bullets.iter() {
@@ -104,14 +107,20 @@ pub fn collide_with_enemies(
             {
                 commands.entity(enemy_entity).despawn();
                 spawn_bullets(
-                    165,
+                    45,
                     enemy_transform.clone(),
                     None,
-                    commands,
-                    meshes,
-                    materials,
+                    &mut commands,
+                    &mut meshes,
+                    &mut materials,
                 );
-                return;
+                spawn_jerry_can(
+                    enemy_transform.translation,
+                    &mut commands,
+                    &asset_server,
+                    &mut texture_atlas_layouts,
+                );
+                break;
             }
         }
     }

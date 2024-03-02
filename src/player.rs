@@ -42,11 +42,11 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn control_player(
     time: Res<Time>,
-    commands: Commands,
+    mut commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut PlayerGun, &mut Transform, &mut Velocity)>,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let (mut player_gun, mut transform, mut velocity) = query.single_mut();
 
@@ -73,9 +73,9 @@ pub fn control_player(
             10,
             transform.clone(),
             Some(current_rotation),
-            commands,
-            meshes,
-            materials,
+            &mut commands,
+            &mut meshes,
+            &mut materials,
         );
     }
 
@@ -99,9 +99,9 @@ pub fn spawn_bullets(
     count: u32,
     spawn_transform: Transform,
     spawn_rotation: Option<f32>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     for _i in 0..count {
         let velocity =
