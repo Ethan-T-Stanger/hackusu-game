@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use {
     crate::{
-        constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED, ROTATION_SPEED},
+        constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED},
         player::{PlayerGun, Velocity},
     },
     std::{f32::consts::TAU, time::Duration},

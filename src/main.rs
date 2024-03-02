@@ -14,13 +14,15 @@ use {
 fn main() {
     App::new()
         .add_plugins(
-            DefaultPlugins.set(ImagePlugin::default_nearest()), // .set(WindowPlugin {
-                                                                //     primary_window: Some(Window {
-                                                                //         mode: WindowMode::BorderlessFullscreen,
-                                                                //         ..default()
-                                                                //     }),
-                                                                //     ..default()
-                                                                // }),
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        mode: WindowMode::BorderlessFullscreen,
+                        ..default()
+                    }),
+                    ..default()
+                }),
         )
         .insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))

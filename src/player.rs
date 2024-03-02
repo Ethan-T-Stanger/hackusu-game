@@ -5,7 +5,7 @@ use {
         PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
     },
     bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-    rand::{random, thread_rng, Rng},
+    rand::{thread_rng, Rng},
     std::{f32::consts::TAU, time::Duration},
 };
 
@@ -149,17 +149,10 @@ fn spawn_bullets(
 pub fn delete_bullets(
     time: Res<Time>,
     mut commands: Commands,
-    mut bullets: Query<(Entity, &mut Transform, &mut Bullet)>,
+    mut bullets: Query<(Entity, &mut Bullet)>,
 ) {
-    for (bullet, mut transform, mut bullet_timer) in bullets.iter_mut() {
+    for (bullet, mut bullet_timer) in bullets.iter_mut() {
         bullet_timer.timer.tick(time.delta());
-
-        // transform.scale = transform.scale.lerp(
-        //     Vec3::ZERO,
-        //     bullet_timer.timer.elapsed().as_millis() as f32
-        //         / bullet_timer.timer.duration().as_millis() as f32
-        //         / 5.0,
-        // );
 
         if bullet_timer.timer.finished() {
             commands.entity(bullet).despawn();
