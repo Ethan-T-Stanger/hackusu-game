@@ -7,7 +7,6 @@ mod target;
 
 use bevy::prelude::*;
 use {
-    bevy::window::WindowMode,
     camera::{add_background_dots, fit_canvas, follow_player, move_background_dots, setup_camera},
     enemies::{
         collide_with_enemies, move_enemies, setup_enemy_spawn_timer, spawn_enemy, Enemy,
@@ -25,16 +24,7 @@ use {
 
 fn main() {
     App::new()
-        .add_plugins(
-            DefaultPlugins.set(ImagePlugin::default_nearest()),
-            // .set(WindowPlugin {
-            //     primary_window: Some(Window {
-            //         mode: WindowMode::BorderlessFullscreen,
-            //         ..default()
-            //     }),
-            //     ..default()
-            // }),
-        )
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_systems(Startup, (setup_camera, add_background_dots))

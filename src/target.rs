@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{constants::JERRY_CAN_FUEL_COUNT, reset_game};
+use crate::constants::JERRY_CAN_FUEL_COUNT;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use rand::{thread_rng, Rng};
 
@@ -133,6 +133,7 @@ pub fn touch_target(
             player_stats.score += 1;
             player_stats.ammunition += JERRY_CAN_FUEL_COUNT;
         }
+
         commands.spawn(AudioBundle {
             source: asset_server.load("sfx/checkpoint.ogg"),
             ..default()
