@@ -1,8 +1,12 @@
 use bevy::prelude::*;
 use {
-    crate::constants::{
-        BOOST_ACCELERATION_SPEED, BULLET_SPEED, BULLET_VELOCITY_OFFSET, DRAG, MAX_SPEED,
-        PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
+    crate::{
+        constants::{
+            BOOST_ACCELERATION_SPEED, BULLET_SPEED, BULLET_VELOCITY_OFFSET, DRAG, MAX_SPEED,
+            PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
+        },
+        enemies::Enemy,
+        jerry_cans::spawn_jerry_can,
     },
     bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     rand::{thread_rng, Rng},
@@ -48,7 +52,10 @@ pub fn control_player(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let (mut player_gun, mut transform, mut velocity) = query.single_mut();
+    let (mut player_gun, mut transform, mut velocity) = match query.get_single_mut() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
 
     if input.pressed(KeyCode::KeyA) {
         transform.rotate_z(ROTATION_SPEED * time.delta_seconds());
@@ -159,6 +166,47 @@ pub fn delete_bullets(
 
         if bullet_timer.timer.finished() {
             commands.entity(bullet).despawn();
+        }
+    }
+}
+
+pub fn kill_player(
+    mut commands: Commands,
+    player_query: Query<(Entity, &Transform), (With<PlayerGun>, Without<Enemy>)>,
+    enemies: Query<&Transform, With<Enemy>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let (player_entity, player_transform) = match player_query.get_single() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
+    for enemy in enemies.iter() {
+        if enemy.translation.distance(Vec3 {
+            x: player_transform.translation.x,
+            y: player_transform.translation.y,
+            z: enemy.translation.z,
+        }) < 7.0
+        {
+            commands.entity(player_entity).despawn();
+            spawn_bullets(
+                45,
+                player_transform.clone(),
+                None,
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+            );
+            spawn_jerry_can(
+                player_transform.translation,
+                &mut commands,
+                &asset_server,
+                &mut texture_atlas_layouts,
+            );
+            break;
         }
     }
 }

@@ -89,8 +89,11 @@ pub fn follow_player(
     player_query: Query<(&Transform, &Velocity), (With<PlayerGun>, Without<InGameCamera>)>,
     mut camera_query: Query<(&mut Transform, &mut InGameCamera)>,
 ) {
-    let (player_transform, velocity) = player_query.single();
     let (mut camera_transform, mut in_game_camera) = camera_query.single_mut();
+    let (player_transform, velocity) = match player_query.get_single() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
 
     let lookahead_position = (velocity.0 / MAX_SPEED) * CAMERA_LOOKAHEAD_DISTANCE;
 

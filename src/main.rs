@@ -10,7 +10,9 @@ use {
     camera::{add_background_dots, fit_canvas, follow_player, move_background_dots, setup_camera},
     enemies::{collide_with_enemies, move_enemies, setup_enemy_spawn_timer, spawn_enemy},
     jerry_cans::{display_ui_jerry_cans, pickup_jerry_cans, rotate_jerry_cans},
-    player::{control_player, delete_bullets, move_objects_with_velocity, setup_player},
+    player::{
+        control_player, delete_bullets, kill_player, move_objects_with_velocity, setup_player,
+    },
 };
 
 fn main() {
@@ -53,7 +55,12 @@ fn main() {
                         move_objects_with_velocity,
                     )
                         .chain(),
-                    (delete_bullets, collide_with_enemies, pickup_jerry_cans),
+                    (
+                        delete_bullets,
+                        collide_with_enemies,
+                        pickup_jerry_cans,
+                        kill_player,
+                    ),
                 )
                     .chain(),
             ),

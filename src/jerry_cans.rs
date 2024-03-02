@@ -84,7 +84,10 @@ pub fn pickup_jerry_cans(
     mut player_query: Query<(&Transform, &mut PlayerGun), Without<JerryCan>>,
     mut jerry_cans: Query<(Entity, &mut Transform, &mut JerryCan)>,
 ) {
-    let (player_transform, mut player_gun) = player_query.single_mut();
+    let (player_transform, mut player_gun) = match player_query.get_single_mut() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
 
     for (jerry_can_entity, mut jerry_can_transform, mut jerry_can) in jerry_cans.iter_mut() {
         jerry_can.pickup_timer.tick(time.delta());
@@ -117,7 +120,10 @@ pub fn display_ui_jerry_cans(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let player_gun = player_query.single();
+    let player_gun = match player_query.get_single() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
     let camera = camera_query.single();
 
     let max_count = (player_gun.ammunition as f32 / JERRY_CAN_FUEL_COUNT as f32).ceil() as i32;

@@ -66,7 +66,10 @@ pub fn move_enemies(
     player_query: Query<&Transform, (With<PlayerGun>, Without<Enemy>)>,
     mut query: Query<(&mut Transform, &mut Velocity), With<Enemy>>,
 ) {
-    let player_transform = player_query.single();
+    let player_transform = match player_query.get_single() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
 
     for (mut enemy, mut velocity) in query.iter_mut() {
         let enemy_angle = get_angle(enemy.rotation);
