@@ -9,11 +9,15 @@ pub const RESOLUTION: Extent3d = Extent3d {
 
 pub const DOT_DISTANCE: u32 = 10;
 
-pub const CAMERA_FOLLOW_SPEED: f32 = 0.95;
+pub const CAMERA_FOLLOW_SPEED: f32 = 0.9;
 pub const CAMERA_LOOKAHEAD_DISTANCE: f32 = 170.0;
 
+pub const SCREEN_SHAKE_FADE: f32 = 0.9;
+pub const SCREEN_SHAKE_MIN: f32 = 0.05;
+pub const CAR_EXPLOSION_SHAKE_AMOUNT: f32 = 5.0;
+
 pub const BOOST_ACCELERATION_SPEED: f32 = 11.0;
-pub const PASSIVE_ACCELERATION_SPEED: f32 = 5.0;
+pub const PASSIVE_ACCELERATION_SPEED: f32 = 1.3;
 pub const MAX_SPEED: f32 = 145.0;
 pub const ROTATION_SPEED: f32 = 7.0;
 pub const DRAG: f32 = 0.998;
@@ -27,4 +31,3 @@ pub const BULLET_VELOCITY_OFFSET: f32 = 30.0;
 
 pub const JERRY_CAN_FUEL_COUNT: u32 = 60;
 pub const JERRY_CAN_COLLECT_SPEED: f32 = 0.45;
-pub const JERRY_CAN_UI_MOVE_SPEED: f32 = 0.2;

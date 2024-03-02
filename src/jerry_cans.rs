@@ -3,9 +3,7 @@ use bevy::prelude::*;
 use {
     crate::{
         camera::InGameCamera,
-        constants::{
-            JERRY_CAN_COLLECT_SPEED, JERRY_CAN_FUEL_COUNT, JERRY_CAN_UI_MOVE_SPEED, RESOLUTION,
-        },
+        constants::{JERRY_CAN_COLLECT_SPEED, JERRY_CAN_FUEL_COUNT, RESOLUTION},
         player::PlayerGun,
     },
     rand::{thread_rng, Rng},

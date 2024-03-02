@@ -1,19 +1,22 @@
+use std::f32::consts::TAU;
+
 use crate::constants::{
     CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, DOT_DISTANCE, HIGH_RES_LAYER, MAX_SPEED,
-    RESOLUTION,
+    RESOLUTION, SCREEN_SHAKE_FADE, SCREEN_SHAKE_MIN,
 };
-use crate::jerry_cans::UIJerryCan;
 use crate::player::{PlayerGun, Velocity};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
-use bevy::transform;
 use bevy::window::WindowResized;
+use rand::{thread_rng, Rng};
 
 #[derive(Component)]
-pub struct InGameCamera;
+pub struct InGameCamera {
+    pub screen_shake_multiplier: f32,
+}
 
 #[derive(Component)]
 pub struct OuterCamera;
@@ -52,7 +55,9 @@ pub fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
             },
             ..default()
         },
-        InGameCamera,
+        InGameCamera {
+            screen_shake_multiplier: 0.0,
+        },
     ));
 
     commands.spawn((
@@ -82,10 +87,10 @@ pub fn fit_canvas(
 pub fn follow_player(
     time: Res<Time>,
     player_query: Query<(&Transform, &Velocity), (With<PlayerGun>, Without<InGameCamera>)>,
-    mut camera_query: Query<&mut Transform, With<InGameCamera>>,
+    mut camera_query: Query<(&mut Transform, &mut InGameCamera)>,
 ) {
     let (player_transform, velocity) = player_query.single();
-    let mut camera_transform = camera_query.single_mut();
+    let (mut camera_transform, mut in_game_camera) = camera_query.single_mut();
 
     let lookahead_position = (velocity.0 / MAX_SPEED) * CAMERA_LOOKAHEAD_DISTANCE;
 
@@ -97,6 +102,19 @@ pub fn follow_player(
         ),
         CAMERA_FOLLOW_SPEED * time.delta_seconds(),
     );
+
+    if in_game_camera.screen_shake_multiplier != 0.0 {
+        let screen_shake_offset = Vec2::from_angle(thread_rng().gen_range(-TAU..TAU))
+            * in_game_camera.screen_shake_multiplier;
+        camera_transform.translation +=
+            Vec3::new(screen_shake_offset.x, screen_shake_offset.y, 0.0);
+
+        if in_game_camera.screen_shake_multiplier < SCREEN_SHAKE_MIN {
+            in_game_camera.screen_shake_multiplier = 0.0
+        } else {
+            in_game_camera.screen_shake_multiplier *= SCREEN_SHAKE_FADE
+        }
+    }
 }
 
 #[derive(Component)]

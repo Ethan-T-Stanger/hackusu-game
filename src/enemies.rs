@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use {
     crate::{
-        constants::{ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED},
+        camera::InGameCamera,
+        constants::{
+            CAR_EXPLOSION_SHAKE_AMOUNT, ENEMY_ACCELLERATION, ENEMY_MAX_SPEED, ENEMY_ROTATION_SPEED,
+        },
         jerry_cans::spawn_jerry_can,
         player::{spawn_bullets, Bullet, PlayerGun, Velocity},
     },
@@ -93,6 +96,7 @@ pub fn collide_with_enemies(
     mut commands: Commands,
     enemies: Query<(Entity, &Transform), (With<Enemy>, Without<Bullet>)>,
     bullets: Query<&Transform, With<Bullet>>,
+    mut camera_query: Query<&mut InGameCamera>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
@@ -105,6 +109,10 @@ pub fn collide_with_enemies(
                 .distance(bullet_transform.translation)
                 < 4.0 + bullet_transform.scale.length()
             {
+                let mut camera = camera_query.single_mut();
+
+                camera.screen_shake_multiplier = CAR_EXPLOSION_SHAKE_AMOUNT;
+
                 commands.entity(enemy_entity).despawn();
                 spawn_bullets(
                     45,
