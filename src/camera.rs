@@ -3,12 +3,16 @@ use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
+use bevy::transform::{self, commands};
 use bevy::window::WindowResized;
 
-use crate::constants::{HIGH_RES_LAYER, RESOLUTION};
+use crate::constants::{
+    CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, HIGH_RES_LAYER, RESOLUTION,
+};
+use crate::game::{PlayerGun, Velocity};
 
 #[derive(Component)]
-struct InGameCamera;
+pub struct InGameCamera;
 
 #[derive(Component)]
 pub struct OuterCamera;
@@ -42,6 +46,7 @@ pub fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
             camera: Camera {
                 order: -1,
                 target: RenderTarget::Image(image_handle.clone()),
+                clear_color: ClearColorConfig::Custom(Color::rgb(0.5, 0.5, 0.6)),
                 ..default()
             },
             ..default()
@@ -69,6 +74,80 @@ pub fn fit_canvas(
         let h_scale = event.width / RESOLUTION.width as f32;
         let v_scale = event.height / RESOLUTION.height as f32;
         let mut projection = projections.single_mut();
-        projection.scale = 1. / h_scale.min(v_scale).round();
+        projection.scale = 1. / h_scale.min(v_scale).floor();
+    }
+}
+
+pub fn follow_player(
+    time: Res<Time>,
+    player_query: Query<(&Transform, &Velocity), (With<PlayerGun>, Without<InGameCamera>)>,
+    mut camera_query: Query<&mut Transform, With<InGameCamera>>,
+) {
+    let (player_transform, velocity) = player_query.single();
+    let mut camera_transform = camera_query.single_mut();
+
+    let normalized_velocity = if velocity.0.length() > 0.5 {
+        velocity.0.normalize()
+    } else {
+        Vec2::ZERO
+    };
+
+    let lookahead_position = normalized_velocity * CAMERA_LOOKAHEAD_DISTANCE;
+
+    camera_transform.translation = camera_transform.translation.lerp(
+        Vec3::new(
+            player_transform.translation.x + lookahead_position.x,
+            player_transform.translation.y + lookahead_position.y,
+            player_transform.translation.z,
+        ),
+        CAMERA_FOLLOW_SPEED * time.delta_seconds(),
+    );
+}
+
+#[derive(Component)]
+pub struct BackgroundDot;
+
+pub fn add_background_dots(mut commands: Commands) {
+    for i in 0..(RESOLUTION.width / 8) {
+        for j in 0..(RESOLUTION.height / 8) {
+            commands.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::rgb(0.2, 0.2, 0.2),
+                        custom_size: Option::Some(Vec2::new(1.0, 1.0)),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(
+                        i as f32 * 8.0 - RESOLUTION.width as f32 / 2.0 + 2.0,
+                        j as f32 * 8.0 - RESOLUTION.height as f32 / 2.0 + 1.0,
+                        -1.0,
+                    ),
+                    ..default()
+                },
+                BackgroundDot,
+            ));
+        }
+    }
+}
+
+pub fn move_background_dots(
+    mut dots: Query<&mut Transform, (With<BackgroundDot>, Without<InGameCamera>)>,
+    camera_query: Query<&Transform, With<InGameCamera>>,
+) {
+    let camera = camera_query.single();
+
+    for mut dot in dots.iter_mut() {
+        while dot.translation.x - camera.translation.x > RESOLUTION.width as f32 / 2.0 {
+            dot.translation.x -= RESOLUTION.width as f32;
+        }
+        while dot.translation.x - camera.translation.x < RESOLUTION.width as f32 / -2.0 {
+            dot.translation.x += RESOLUTION.width as f32;
+        }
+        while dot.translation.y - camera.translation.y > RESOLUTION.height as f32 / 2.0 {
+            dot.translation.y -= RESOLUTION.height as f32;
+        }
+        while dot.translation.y - camera.translation.y < RESOLUTION.height as f32 / -2.0 {
+            dot.translation.y += RESOLUTION.height as f32;
+        }
     }
 }

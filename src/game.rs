@@ -11,7 +11,7 @@ use {
 #[derive(Bundle)]
 pub struct Player {
     sprite_bundle: SpriteBundle,
-    velocity_bundle: Velocity,
+    velocity: Velocity,
     player_gun: PlayerGun,
 }
 
@@ -22,7 +22,7 @@ pub struct PlayerGun {
 }
 
 #[derive(Component)]
-pub struct Velocity(Vec2);
+pub struct Velocity(pub Vec2);
 
 pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Player {
@@ -30,7 +30,7 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: asset_server.load("graphics/player.png"),
             ..default()
         },
-        velocity_bundle: Velocity(Vec2::ZERO),
+        velocity: Velocity(Vec2::ZERO),
         player_gun: PlayerGun {
             shoot_timer: Timer::new(Duration::from_millis(50), TimerMode::Once),
             ammunition: 100,

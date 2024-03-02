@@ -4,7 +4,7 @@ mod game;
 
 use bevy::prelude::*;
 use {
-    camera::{fit_canvas, setup_camera},
+    camera::{add_background_dots, fit_canvas, follow_player, move_background_dots, setup_camera},
     game::{control_player, move_objects_with_velocity, setup_player},
 };
 
@@ -12,12 +12,19 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .insert_resource(Msaa::Off)
-        .add_systems(Startup, (setup_player, setup_camera))
+        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
+        .add_systems(Startup, (setup_player, setup_camera, add_background_dots))
         .add_systems(
             Update,
             (
                 fit_canvas,
-                (control_player, move_objects_with_velocity).chain(),
+                (
+                    control_player,
+                    move_background_dots,
+                    follow_player,
+                    move_objects_with_velocity,
+                )
+                    .chain(),
             ),
         )
         .run();
