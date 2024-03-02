@@ -19,7 +19,7 @@ pub struct Player {
 #[derive(Component)]
 pub struct PlayerGun {
     shoot_timer: Timer,
-    ammunition: u32,
+    pub ammunition: u32,
 }
 
 #[derive(Component)]
@@ -35,7 +35,7 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         velocity: Velocity(Vec2::ZERO),
         player_gun: PlayerGun {
             shoot_timer: Timer::new(Duration::from_millis(5), TimerMode::Once),
-            ammunition: 1000,
+            ammunition: 100,
         },
     });
 }

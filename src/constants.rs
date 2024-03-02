@@ -24,3 +24,6 @@ pub const ENEMY_ROTATION_SPEED: f32 = 4.0;
 
 pub const BULLET_SPEED: f32 = 70.0;
 pub const BULLET_VELOCITY_OFFSET: f32 = 30.0;
+
+pub const JERRY_CAN_FUEL_COUNT: u32 = 60;
+pub const JERRY_CAN_COLLECT_SPEED: f32 = 0.45;

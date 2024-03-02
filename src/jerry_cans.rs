@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
-use std::time::Duration;
+use {
+    crate::{
+        constants::{JERRY_CAN_COLLECT_SPEED, JERRY_CAN_FUEL_COUNT},
+        player::PlayerGun,
+    },
+    std::time::Duration,
+};
 
 #[derive(Bundle)]
 pub struct JerryCanBundle {
@@ -10,7 +16,7 @@ pub struct JerryCanBundle {
 
 #[derive(Component)]
 pub struct JerryCan {
-    pickup_timer: Option<Timer>,
+    pickup_timer: Timer,
     sprite_update_timer: Timer,
 }
 
@@ -38,7 +44,7 @@ pub fn spawn_jerry_can(
             ..default()
         },
         jerry_can: JerryCan {
-            pickup_timer: Some(Timer::from_seconds(1.0, TimerMode::Once)),
+            pickup_timer: Timer::from_seconds(1.0, TimerMode::Once),
             sprite_update_timer: Timer::new(Duration::from_millis(200), TimerMode::Repeating),
         },
     });
@@ -56,5 +62,33 @@ pub fn rotate_jerry_cans(
         }
 
         atlas.index = if atlas.index == 8 { 0 } else { atlas.index + 1 };
+    }
+}
+
+pub fn pickup_jerry_cans(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut player_query: Query<(&Transform, &mut PlayerGun), Without<JerryCan>>,
+    mut jerry_cans: Query<(Entity, &mut Transform, &mut JerryCan)>,
+) {
+    let (player_transform, mut player_gun) = player_query.single_mut();
+
+    for (jerry_can_entity, mut jerry_can_transform, mut jerry_can) in jerry_cans.iter_mut() {
+        jerry_can.pickup_timer.tick(time.delta());
+
+        if jerry_can.pickup_timer.finished() {
+            jerry_can_transform.translation = jerry_can_transform
+                .translation
+                .lerp(player_transform.translation, JERRY_CAN_COLLECT_SPEED);
+        }
+
+        if jerry_can_transform
+            .translation
+            .distance(player_transform.translation)
+            < 4.0
+        {
+            commands.entity(jerry_can_entity).despawn();
+            player_gun.ammunition += JERRY_CAN_FUEL_COUNT
+        }
     }
 }
