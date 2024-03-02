@@ -1,10 +1,15 @@
-use crate::constants::{
-    BOOST_ACCELERATION_SPEED, DRAG, MAX_SPEED, PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
-};
 use bevy::prelude::*;
+use {
+    crate::constants::{
+        BOOST_ACCELERATION_SPEED, DRAG, MAX_SPEED, PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
+    },
+    std::time::Duration,
+};
 
 #[derive(Component)]
-pub struct Player;
+pub struct Player {
+    shoot_timer: Timer,
+}
 
 #[derive(Component)]
 pub struct Velocity(Vec2);
@@ -16,16 +21,19 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Velocity(Vec2::ZERO),
-        Player,
+        Player {
+            shoot_timer: Timer::new(Duration::from_millis(50), TimerMode::Once),
+        },
     ));
 }
 
-pub fn move_player(
+pub fn control_player(
     time: Res<Time>,
+    // mut commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&Player, &mut Transform, &mut Velocity)>,
+    mut query: Query<(&mut Player, &mut Transform, &mut Velocity)>,
 ) {
-    let (_player, mut transform, mut velocity) = query.single_mut();
+    let (mut player, mut transform, mut velocity) = query.single_mut();
 
     if input.pressed(KeyCode::KeyA) {
         transform.rotate_z(ROTATION_SPEED * time.delta_seconds());
@@ -37,9 +45,12 @@ pub fn move_player(
     let axis_angle = transform.rotation.to_axis_angle();
     let current_rotation = axis_angle.0.z * axis_angle.1;
 
-    if input.pressed(KeyCode::KeyK) {
+    player.shoot_timer.tick(time.delta());
+
+    if input.pressed(KeyCode::KeyK) && player.shoot_timer.finished() {
         let acceleration_vector = rotation_to_vector(current_rotation) * BOOST_ACCELERATION_SPEED;
         velocity.0 += acceleration_vector;
+        player.shoot_timer.reset();
     }
 
     let velocity_speed = velocity.0.length();
