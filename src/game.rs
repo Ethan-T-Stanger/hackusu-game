@@ -80,6 +80,9 @@ pub fn control_player(
     velocity.0 *= DRAG;
 }
 
+#[derive(Component)]
+pub struct Bullet;
+
 fn spawn_bullet(
     player_transform: Transform,
     player_rotation: f32,
@@ -101,13 +104,32 @@ fn spawn_bullet(
             },
             sprite: Sprite {
                 color: Color::rgb(1.0, 1.0, 1.0),
-                custom_size: Option::Some(Vec2::new(10.0, 1.0)),
+                custom_size: Option::Some(Vec2::new(8.0, 1.0)),
                 ..default()
             },
             ..default()
         },
         Velocity((velocity + player_velocity).normalize() * velocity.length()),
+        Bullet,
     ));
+}
+
+pub fn delete_bullets(
+    mut commands: Commands,
+    player_query: Query<&Transform, (With<PlayerGun>, Without<Bullet>)>,
+    bullets: Query<(Entity, &Transform), With<Bullet>>,
+) {
+    let player_transform = player_query.single();
+
+    for (bullet, bullet_transform) in bullets.iter() {
+        if bullet_transform
+            .translation
+            .distance(player_transform.translation)
+            > 80.0
+        {
+            commands.entity(bullet).despawn();
+        }
+    }
 }
 
 pub fn move_objects_with_velocity(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {

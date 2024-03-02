@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use {
     bevy::window::WindowMode,
     camera::{add_background_dots, fit_canvas, follow_player, move_background_dots, setup_camera},
-    game::{control_player, move_objects_with_velocity, setup_player},
+    game::{control_player, delete_bullets, move_objects_with_velocity, setup_player},
 };
 
 fn main() {
@@ -29,11 +29,10 @@ fn main() {
             Update,
             (
                 fit_canvas,
+                move_background_dots,
                 (
-                    control_player,
-                    move_background_dots,
-                    follow_player,
-                    move_objects_with_velocity,
+                    ((control_player, follow_player), move_objects_with_velocity).chain(),
+                    delete_bullets,
                 )
                     .chain(),
             ),
