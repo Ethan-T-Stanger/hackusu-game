@@ -110,6 +110,7 @@ pub fn touch_target(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut player_query: Query<(&Transform, &mut PlayerStats)>,
     target_query: Query<(Entity, &Transform), With<Target>>,
+    asset_server: Res<AssetServer>,
 ) {
     let (player_transform, mut player_stats) = match player_query.get_single_mut() {
         Ok(value) => value,
@@ -132,6 +133,10 @@ pub fn touch_target(
             player_stats.score += 1;
             player_stats.ammunition += JERRY_CAN_FUEL_COUNT;
         }
+        commands.spawn(AudioBundle {
+            source: asset_server.load("sfx/checkpoint.ogg"),
+            ..default()
+        });
     }
 }
 

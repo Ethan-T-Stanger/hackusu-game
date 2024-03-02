@@ -138,6 +138,10 @@ pub fn collide_with_enemies(
                 camera.screen_shake_multiplier = CAR_EXPLOSION_SHAKE_AMOUNT;
 
                 commands.entity(enemy_entity).despawn();
+                commands.spawn(AudioBundle {
+                    source: asset_server.load("sfx/explosion.ogg"),
+                    ..default()
+                });
                 spawn_bullets(
                     45,
                     enemy_transform.clone(),

@@ -95,6 +95,7 @@ pub fn pickup_jerry_cans(
     mut commands: Commands,
     mut player_query: Query<(&Transform, &mut PlayerStats), Without<JerryCan>>,
     mut jerry_cans: Query<(Entity, &mut Transform, &mut JerryCan)>,
+    asset_server: Res<AssetServer>,
 ) {
     let (player_transform, mut player_gun) = match player_query.get_single_mut() {
         Ok(value) => value,
@@ -116,7 +117,11 @@ pub fn pickup_jerry_cans(
             < 4.0
         {
             commands.entity(jerry_can_entity).despawn();
-            player_gun.ammunition += JERRY_CAN_FUEL_COUNT
+            player_gun.ammunition += JERRY_CAN_FUEL_COUNT;
+            commands.spawn(AudioBundle {
+                source: asset_server.load("sfx/jerry.ogg"),
+                ..default()
+            });
         }
     }
 }

@@ -71,12 +71,12 @@ pub fn control_player(
 
     player_stats.shoot_timer.tick(time.delta());
 
-    if input.pressed(KeyCode::KeyK)
+    if (input.pressed(KeyCode::KeyK)
         || input.pressed(KeyCode::Space)
         || input.pressed(KeyCode::KeyX)
-        || input.pressed(KeyCode::ShiftRight)
-            && player_stats.shoot_timer.finished()
-            && player_stats.ammunition != 0
+        || input.pressed(KeyCode::ShiftRight))
+        && player_stats.shoot_timer.finished()
+        && player_stats.ammunition > 0
     {
         velocity.0 += Vec2::from_angle(current_rotation) * BOOST_ACCELERATION_SPEED;
         player_stats.ammunition -= 1;
