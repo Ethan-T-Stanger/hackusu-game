@@ -3,7 +3,6 @@ use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{
     TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
-use bevy::transform::{self, commands};
 use bevy::window::WindowResized;
 
 use crate::constants::{
