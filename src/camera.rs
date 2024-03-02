@@ -2,7 +2,7 @@ use crate::constants::{
     CAMERA_FOLLOW_SPEED, CAMERA_LOOKAHEAD_DISTANCE, DOT_DISTANCE, HIGH_RES_LAYER, MAX_SPEED,
     RESOLUTION,
 };
-use crate::game::{PlayerGun, Velocity};
+use crate::player::{PlayerGun, Velocity};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{

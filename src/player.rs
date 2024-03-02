@@ -4,7 +4,8 @@ use {
         BOOST_ACCELERATION_SPEED, BULLET_SPEED, BULLET_VELOCITY_OFFSET, DRAG, MAX_SPEED,
         PASSIVE_ACCELERATION_SPEED, ROTATION_SPEED,
     },
-    rand::{thread_rng, Rng},
+    bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+    rand::{random, thread_rng, Rng},
     std::{f32::consts::TAU, time::Duration},
 };
 
@@ -33,8 +34,8 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         velocity: Velocity(Vec2::ZERO),
         player_gun: PlayerGun {
-            shoot_timer: Timer::new(Duration::from_millis(50), TimerMode::Once),
-            ammunition: 100,
+            shoot_timer: Timer::new(Duration::from_millis(5), TimerMode::Once),
+            ammunition: 1000,
         },
     });
 }
@@ -44,6 +45,8 @@ pub fn control_player(
     commands: Commands,
     input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut PlayerGun, &mut Transform, &mut Velocity)>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let (mut player_gun, mut transform, mut velocity) = query.single_mut();
 
@@ -66,7 +69,14 @@ pub fn control_player(
         velocity.0 += Vec2::from_angle(current_rotation) * BOOST_ACCELERATION_SPEED;
         player_gun.ammunition -= 1;
         player_gun.shoot_timer.reset();
-        spawn_bullet(transform.clone(), current_rotation, velocity.0, commands);
+        spawn_bullets(
+            10,
+            transform.clone(),
+            current_rotation,
+            commands,
+            meshes,
+            materials,
+        );
     }
 
     let velocity_speed = velocity.0.length();
@@ -81,52 +91,77 @@ pub fn control_player(
 }
 
 #[derive(Component)]
-pub struct Bullet;
+pub struct Bullet {
+    timer: Timer,
+}
 
-fn spawn_bullet(
+fn spawn_bullets(
+    count: u32,
     player_transform: Transform,
     player_rotation: f32,
-    player_velocity: Vec2,
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let velocity = (Vec2::from_angle(player_rotation) * BULLET_SPEED * -1.0)
         + Vec2::from_angle(thread_rng().gen_range(-TAU..TAU)) * BULLET_VELOCITY_OFFSET;
 
-    commands.spawn((
-        SpriteBundle {
-            transform: Transform {
-                translation: Vec3 {
-                    z: 0.0,
-                    ..player_transform.translation
+    for _i in 0..count {
+        let color_int = thread_rng().gen_range(0..6);
+
+        let color = if color_int <= 1 {
+            Color::rgb(0.75, 0.1, 0.1)
+        } else if color_int <= 2 {
+            Color::rgb(0.86, 0.38, 0.1)
+        } else if color_int <= 4 {
+            Color::rgb(0.86, 0.63, 0.1)
+        } else {
+            Color::rgb(0.2, 0.2, 0.2)
+        };
+
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Circle {
+                    radius: thread_rng().gen_range(1.0..2.5),
+                })),
+                material: materials.add(color),
+                transform: Transform {
+                    translation: Vec3 {
+                        z: 0.0,
+                        ..player_transform.translation
+                    },
+                    rotation: Quat::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), velocity.to_angle()),
+                    ..default()
                 },
-                rotation: Quat::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), velocity.to_angle()),
                 ..default()
             },
-            sprite: Sprite {
-                color: Color::rgb(1.0, 1.0, 1.0),
-                custom_size: Option::Some(Vec2::new(8.0, 1.0)),
-                ..default()
+            Velocity(velocity),
+            Bullet {
+                timer: Timer::new(
+                    Duration::from_millis(thread_rng().gen_range(50..250)),
+                    TimerMode::Once,
+                ),
             },
-            ..default()
-        },
-        Velocity((velocity + player_velocity).normalize() * velocity.length()),
-        Bullet,
-    ));
+        ));
+    }
 }
 
 pub fn delete_bullets(
+    time: Res<Time>,
     mut commands: Commands,
-    player_query: Query<&Transform, (With<PlayerGun>, Without<Bullet>)>,
-    bullets: Query<(Entity, &Transform), With<Bullet>>,
+    mut bullets: Query<(Entity, &mut Transform, &mut Bullet)>,
 ) {
-    let player_transform = player_query.single();
+    for (bullet, mut transform, mut bullet_timer) in bullets.iter_mut() {
+        bullet_timer.timer.tick(time.delta());
 
-    for (bullet, bullet_transform) in bullets.iter() {
-        if bullet_transform
-            .translation
-            .distance(player_transform.translation)
-            > 80.0
-        {
+        // transform.scale = transform.scale.lerp(
+        //     Vec3::ZERO,
+        //     bullet_timer.timer.elapsed().as_millis() as f32
+        //         / bullet_timer.timer.duration().as_millis() as f32
+        //         / 5.0,
+        // );
+
+        if bullet_timer.timer.finished() {
             commands.entity(bullet).despawn();
         }
     }
