@@ -113,7 +113,7 @@ pub fn add_background_dots(mut commands: Commands) {
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::rgb(0.2, 0.2, 0.2),
+                        color: Color::rgb(0.3, 0.3, 0.3),
                         custom_size: Option::Some(Vec2::new(1.0, 1.0)),
                         ..default()
                     },

@@ -27,6 +27,7 @@ pub struct Velocity(pub Vec2);
 pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Player {
         sprite_bundle: SpriteBundle {
+            transform: Transform::from_xyz(0.0, 0.0, 10.0),
             texture: asset_server.load("graphics/player.png"),
             ..default()
         },
@@ -63,9 +64,9 @@ pub fn control_player(
         && player_gun.ammunition != 0
     {
         velocity.0 += Vec2::from_angle(current_rotation) * BOOST_ACCELERATION_SPEED;
-        spawn_bullet(transform.clone(), current_rotation, commands);
         player_gun.ammunition -= 1;
         player_gun.shoot_timer.reset();
+        spawn_bullet(transform.clone(), current_rotation, velocity.0, commands);
     }
 
     let velocity_speed = velocity.0.length();
@@ -79,14 +80,22 @@ pub fn control_player(
     velocity.0 *= DRAG;
 }
 
-fn spawn_bullet(player_transform: Transform, player_rotation: f32, mut commands: Commands) {
+fn spawn_bullet(
+    player_transform: Transform,
+    player_rotation: f32,
+    player_velocity: Vec2,
+    mut commands: Commands,
+) {
     let velocity = (Vec2::from_angle(player_rotation) * BULLET_SPEED * -1.0)
         + Vec2::from_angle(thread_rng().gen_range(-TAU..TAU)) * BULLET_VELOCITY_OFFSET;
 
     commands.spawn((
         SpriteBundle {
             transform: Transform {
-                translation: player_transform.translation,
+                translation: Vec3 {
+                    z: 0.0,
+                    ..player_transform.translation
+                },
                 rotation: Quat::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), velocity.to_angle()),
                 ..default()
             },
@@ -97,7 +106,7 @@ fn spawn_bullet(player_transform: Transform, player_rotation: f32, mut commands:
             },
             ..default()
         },
-        Velocity(velocity),
+        Velocity((velocity + player_velocity).normalize() * velocity.length()),
     ));
 }
 
