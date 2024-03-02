@@ -24,7 +24,7 @@ pub struct Enemy;
 #[derive(Component)]
 pub struct EnemySpawnTimer(Timer);
 
-pub fn setup_enemy_spawn_timer(mut commands: Commands) {
+pub fn setup_enemy_spawn_timer(commands: &mut Commands) {
     commands.spawn(EnemySpawnTimer(Timer::new(
         Duration::from_secs(5),
         TimerMode::Once,
@@ -37,7 +37,10 @@ pub fn spawn_enemy(
     mut query: Query<&mut EnemySpawnTimer>,
     asset_server: Res<AssetServer>,
 ) {
-    let mut timer = query.single_mut();
+    let mut timer = match query.get_single_mut() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
 
     timer.0.tick(time.delta());
 

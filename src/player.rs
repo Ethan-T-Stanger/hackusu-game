@@ -29,7 +29,7 @@ pub struct PlayerGun {
 #[derive(Component)]
 pub struct Velocity(pub Vec2);
 
-pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_player(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     commands.spawn(Player {
         sprite_bundle: SpriteBundle {
             transform: Transform::from_xyz(0.0, 0.0, 10.0),
