@@ -12,3 +12,6 @@ pub const PASSIVE_ACCELERATION_SPEED: f32 = 5.0;
 pub const MAX_SPEED: f32 = 145.0;
 pub const ROTATION_SPEED: f32 = 7.0;
 pub const DRAG: f32 = 0.998;
+
+pub const BULLET_SPEED: f32 = 200.0;
+pub const BULLET_VELOCITY_OFFSET: f32 = 30.0;

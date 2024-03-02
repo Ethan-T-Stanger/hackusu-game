@@ -5,7 +5,7 @@ mod game;
 use bevy::prelude::*;
 use {
     camera::{fit_canvas, setup_camera},
-    game::{control_player, setup_player},
+    game::{control_player, move_objects_with_velocity, setup_player},
 };
 
 fn main() {
@@ -13,6 +13,12 @@ fn main() {
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .insert_resource(Msaa::Off)
         .add_systems(Startup, (setup_player, setup_camera))
-        .add_systems(Update, (fit_canvas, control_player))
+        .add_systems(
+            Update,
+            (
+                fit_canvas,
+                (control_player, move_objects_with_velocity).chain(),
+            ),
+        )
         .run();
 }
